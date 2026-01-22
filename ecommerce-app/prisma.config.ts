@@ -8,7 +8,7 @@ const prismaConfig = {
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    url: process.env["SQLITE_URL"],
   },
 };
 
