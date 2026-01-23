@@ -1,12 +1,16 @@
 // src/app/layout.tsx
 import "./globals.css";
+import { getReplitUser } from "@/lib/auth/replit";
 
 export const metadata = {
   title: "E-commerce Admin",
   description: "Panel de administración Next.js + Prisma"
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const user = await getReplitUser();
+  const isAdmin = user?.roles.includes("admin");
+
   return (
     <html lang="es">
       <body className="min-h-screen flex bg-slate-50">
@@ -19,15 +23,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <a href="/" className="nav-link">Inicio</a>
             <a href="/products" className="nav-link">Productos</a>
             <a href="/orders" className="nav-link">Pedidos</a>
-            <a href="/users" className="nav-link">Usuarios</a>
+            {isAdmin && <a href="/users" className="nav-link">Usuarios (Admin)</a>}
           </nav>
+          
+          <div className="mt-auto pt-6 border-t border-slate-100">
+            {user ? (
+              <div className="px-2">
+                <p className="text-xs text-slate-400 mb-1">Conectado como</p>
+                <p className="text-sm font-medium text-slate-700 truncate">{user.name}</p>
+                <a href="/api/auth/logout" className="text-xs text-red-500 hover:text-red-600 mt-2 block">Cerrar sesión</a>
+              </div>
+            ) : (
+              <a href="/api/auth/login" className="btn-primary w-full text-center text-sm">Iniciar Sesión</a>
+            )}
+          </div>
         </aside>
         <main className="flex-1 flex flex-col min-w-0">
           <header className="h-16 border-b border-slate-200 bg-white flex items-center justify-between px-8">
-            <h1 className="text-sm font-medium text-slate-500">Dashboard de Administración</h1>
-            <div className="flex items-center gap-3">
-               <div className="w-8 h-8 rounded-full bg-slate-200"></div>
-            </div>
+            <h1 className="text-sm font-medium text-slate-500">
+              {isAdmin ? "Panel de Administrador" : "Portal de Cliente"}
+            </h1>
           </header>
           <section className="p-8 overflow-auto">
             <div className="max-w-6xl mx-auto">
