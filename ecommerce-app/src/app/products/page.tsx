@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 const getBaseUrl = () => {
   if (process.env.NEXT_PUBLIC_BASE_URL) return process.env.NEXT_PUBLIC_BASE_URL;
   if (process.env.REPLIT_DEV_DOMAIN) return `https://${process.env.REPLIT_DEV_DOMAIN}`;
-  return 'http://localhost:5000';
+  return 'http://0.0.0.0:5000';
 };
 
 async function getProducts() {
