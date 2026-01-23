@@ -23,7 +23,8 @@ async function getUsers() {
 
 export default async function UsersPage() {
   const authUser = await getReplitUser();
-  if (!authUser?.roles.includes("admin")) {
+  const isAdmin = authUser?.roles?.includes("admin") ?? false;
+  if (!isAdmin) {
     redirect("/");
   }
 

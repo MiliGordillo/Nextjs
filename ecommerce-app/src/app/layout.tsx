@@ -9,7 +9,7 @@ export const metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const user = await getReplitUser();
-  const isAdmin = user?.roles.includes("admin");
+  const isAdmin = user?.roles?.includes("admin") ?? false;
 
   return (
     <html lang="es">

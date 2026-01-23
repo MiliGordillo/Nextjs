@@ -3,7 +3,7 @@ import { getReplitUser } from "@/lib/auth/replit";
 
 export default async function HomePage() {
   const user = await getReplitUser();
-  const isAdmin = user?.roles.includes("admin");
+  const isAdmin = user?.roles?.includes("admin") ?? false;
 
   return (
     <div className="space-y-6">
