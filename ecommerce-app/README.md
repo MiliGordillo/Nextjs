@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# E-commerce App - Trabajo Práctico Final
 
-## Getting Started
+Este proyecto es una aplicación Full Stack desarrollada para el curso de **Next.js + Prisma ORM**.
 
-First, run the development server:
+## 🚀 Características del Proyecto
+- **Frontend Moderno**: Interfaz construida con Next.js 16, React 19 y Tailwind CSS 4.
+- **Base de Datos**: Gestión de datos con Prisma ORM y SQLite.
+- **Autenticación**: Integración con el sistema de autenticación de Replit (Headers).
+- **Control de Acceso**: Protección de rutas por Rol (Admin vs Customer).
+- **CRUD Completo**: API dinámica para la gestión de productos.
+- **Relaciones**: Modelo de datos relacionado (Usuarios -> Pedidos <- Productos).
 
+## 🛠️ Entidades del Sistema (Modelos)
+1. **User**: Almacena información de perfiles y roles.
+2. **Product**: Catálogo de artículos con stock y precios.
+3. **Order**: Gestiona la relación entre usuarios y productos (compras).
+
+## 🔗 APIs Implementadas
+- `/api/products`: 
+  - `GET`: Lista todos los productos.
+  - `POST`: Crea un nuevo producto (Admin).
+- `/api/products/[id]` (**API Dinámica**):
+  - `GET`: Obtiene un producto por ID.
+  - `PUT`: Actualiza un producto (Admin).
+  - `DELETE`: Elimina un producto (Admin).
+- `/api/users`: `GET` y `POST` para gestión de usuarios.
+- `/api/orders`: Gestión de pedidos.
+
+## 🔑 Credenciales y Autenticación
+La aplicación utiliza los headers de Replit para identificar al usuario.
+- **Acceso Admin**: El sistema detecta automáticamente si el usuario tiene el rol "admin" en su perfil de Replit o si su ID coincide con el configurado.
+- **Protección**: Las rutas `/users` y las APIs de modificación están protegidas para que solo administradores puedan usarlas.
+
+## 📦 Instalación y Despliegue
 ```bash
+npm install
+npx prisma db push
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+La aplicación está lista para ser desplegada en servicios como Vercel o Netlify (conectando el repositorio de GitHub).
