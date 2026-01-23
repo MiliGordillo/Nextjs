@@ -1,95 +1,257 @@
 // src/app/users/page.tsx
-import { revalidatePath } from "next/cache";
-import { getReplitUser } from "@/lib/auth/replit";
-import { redirect } from "next/navigation";
+'use client';
 
-const getBaseUrl = () => {
-  if (process.env.NEXT_PUBLIC_BASE_URL) return process.env.NEXT_PUBLIC_BASE_URL;
-  if (process.env.REPLIT_DEV_DOMAIN) return `https://${process.env.REPLIT_DEV_DOMAIN}`;
-  return 'http://0.0.0.0:5000';
-};
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-async function getUsers() {
-  const baseUrl = getBaseUrl();
-  try {
-    const res = await fetch(`${baseUrl}/api/users`, { cache: "no-store" });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return Array.isArray(data) ? data : [];
-  } catch (e) {
-    return [];
-  }
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  createdAt: string;
 }
 
-export default async function UsersPage() {
-  const authUser = await getReplitUser();
-  const isAdmin = authUser?.roles?.includes("admin") ?? false;
-  if (!isAdmin) {
-    redirect("/");
-  }
+export default function UsersPage() {
+  const router = useRouter();
+  const [users, setUsers] = useState<User[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'CUSTOMER',
+  });
 
-  const users = await getUsers();
+  useEffect(() => {
+    checkAdminAndLoadUsers();
+  }, []);
 
-  async function create(formData: FormData) {
-    "use server";
-    const baseUrl = getBaseUrl();
-    await fetch(`${baseUrl}/api/users`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: formData.get("name"),
-        email: formData.get("email"),
-        role: formData.get("role") || "CUSTOMER",
-      }),
-    });
-    revalidatePath("/users");
+  const checkAdminAndLoadUsers = async () => {
+    try {
+      const res = await fetch('/api/auth/me');
+      if (!res.ok) {
+        router.push('/login');
+        return;
+      }
+      const user = await res.json();
+      if (user.role !== 'ADMIN') {
+        router.push('/');
+        return;
+      }
+      setIsAdmin(true);
+      loadUsers();
+    } catch (err) {
+      router.push('/login');
+    }
+  };
+
+  const loadUsers = async () => {
+    try {
+      const res = await fetch('/api/users', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        setUsers(Array.isArray(data) ? data : []);
+      } else {
+        setError('Error al cargar usuarios');
+      }
+    } catch (err) {
+      setError('Error de conexión');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccessMessage('');
+
+    if (!formData.name || !formData.email || !formData.password) {
+      setError('Todos los campos son requeridos');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || 'Error al crear usuario');
+        return;
+      }
+
+      setSuccessMessage('Usuario creado exitosamente');
+      setFormData({ name: '', email: '', password: '', role: 'CUSTOMER' });
+      loadUsers();
+    } catch (err) {
+      setError('Error de conexión');
+    }
+  };
+
+  const deleteUser = async (userId: string) => {
+    if (!confirm('¿Estás seguro de que deseas eliminar este usuario?')) return;
+
+    try {
+      const res = await fetch('/api/users', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (!res.ok) {
+        setError('Error al eliminar usuario');
+        return;
+      }
+
+      setSuccessMessage('Usuario eliminado');
+      loadUsers();
+    } catch (err) {
+      setError('Error de conexión');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-slate-400">Cargando usuarios...</div>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Gestión de Usuarios (Solo Admin)</h1>
-        <p className="text-slate-500">Solo usuarios con rol de administrador pueden ver esta sección.</p>
+        <h1 className="text-2xl font-bold text-slate-900">Gestión de Usuarios</h1>
+        <p className="text-slate-500">Solo administradores pueden acceder a esta sección.</p>
       </div>
-      {/* Rest of the UI remains the same... */}
+
+      {error && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-sm text-red-700">{error}</p>
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+          <p className="text-sm text-green-700">{successMessage}</p>
+        </div>
+      )}
+
       <div className="card">
-        <h2 className="font-bold mb-4 text-slate-800">Registrar Usuario</h2>
-        <form action={create} className="flex flex-wrap gap-4">
-          <input name="name" placeholder="Nombre completo" className="input flex-1 min-w-[200px]" required />
-          <input name="email" type="email" placeholder="Correo electrónico" className="input flex-1 min-w-[200px]" required />
-          <select name="role" className="input w-40">
-            <option value="CUSTOMER">Cliente</option>
-            <option value="ADMIN">Admin</option>
-          </select>
-          <button className="btn-primary">Añadir Usuario</button>
+        <h2 className="font-bold mb-4 text-slate-800">Registrar Nuevo Usuario</h2>
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+          <div>
+            <label className="text-sm font-medium mb-2 block">Nombre</label>
+            <input
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              placeholder="Nombre completo"
+              className="input"
+              required
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium mb-2 block">Email</label>
+            <input
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              placeholder="usuario@ejemplo.com"
+              className="input"
+              required
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium mb-2 block">Contraseña</label>
+            <input
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              placeholder="••••••••"
+              className="input"
+              required
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium mb-2 block">Rol</label>
+            <select
+              name="role"
+              value={formData.role}
+              onChange={handleInputChange}
+              className="input"
+            >
+              <option value="CUSTOMER">Cliente</option>
+              <option value="ADMIN">Administrador</option>
+            </select>
+          </div>
+          <button type="submit" className="btn-primary">
+            Agregar Usuario
+          </button>
         </form>
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-        <table className="w-full text-left">
-          <thead className="bg-slate-50 border-b border-slate-200">
-            <tr>
-              <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Nombre</th>
-              <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</th>
-              <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Rol</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {users.map((u: any) => (
-              <tr key={u.id} className="hover:bg-slate-50/50 transition-colors">
-                <td className="px-6 py-4 font-medium text-slate-900">{u.name}</td>
-                <td className="px-6 py-4 text-slate-500">{u.email}</td>
-                <td className="px-6 py-4">
-                  <span className={`text-xs px-2 py-1 rounded-full font-bold ${u.role === 'ADMIN' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
-                    {u.role}
-                  </span>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th className="px-6 py-4 font-semibold text-slate-500 uppercase text-xs">Nombre</th>
+                <th className="px-6 py-4 font-semibold text-slate-500 uppercase text-xs">Email</th>
+                <th className="px-6 py-4 font-semibold text-slate-500 uppercase text-xs">Rol</th>
+                <th className="px-6 py-4 font-semibold text-slate-500 uppercase text-xs">Registrado</th>
+                <th className="px-6 py-4 font-semibold text-slate-500 uppercase text-xs">Acciones</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {users.map((user) => (
+                <tr key={user.id} className="hover:bg-slate-50/50 transition-colors">
+                  <td className="px-6 py-4 font-medium text-slate-900">{user.name}</td>
+                  <td className="px-6 py-4 text-slate-600">{user.email}</td>
+                  <td className="px-6 py-4">
+                    <span className={`text-xs px-3 py-1 rounded-full font-bold ${
+                      user.role === 'ADMIN'
+                        ? 'bg-purple-100 text-purple-700'
+                        : 'bg-blue-100 text-blue-700'
+                    }`}>
+                      {user.role === 'ADMIN' ? 'Administrador' : 'Cliente'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-slate-600 text-xs">
+                    {new Date(user.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4">
+                    <button
+                      onClick={() => deleteUser(user.id)}
+                      className="text-xs px-3 py-1 bg-red-50 text-red-600 rounded hover:bg-red-100 transition-colors"
+                    >
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
 }
+
 
