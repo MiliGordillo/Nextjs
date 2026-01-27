@@ -193,39 +193,3 @@ export default function OrdersPage() {
     </div>
   );
 }
-
-            <p className="text-slate-400">No hay pedidos registrados</p>
-          </div>
-        ) : (
-          orders.map((o: any) => (
-            <div key={o.id} className="card flex items-center justify-between hover:scale-[1.01]">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-xl">
-                  🛒
-                </div>
-                <div>
-                  <div className="font-bold text-slate-900">
-                    {o.product?.name || 'Producto eliminado'}
-                  </div>
-                  <div className="text-sm text-slate-500">
-                    Cliente: <span className="font-medium text-slate-700">{o.user?.name || 'Usuario desconocido'}</span> • Cantidad: {o.quantity}
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-6">
-                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                  o.status === 'PENDING' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
-                }`}>
-                  {o.status}
-                </span>
-                <a href={`/orders/${o.id}`} className="p-2 hover:bg-slate-100 rounded-lg transition-colors text-blue-600">
-                   ⚙️
-                </a>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-    </div>
-  );
-}

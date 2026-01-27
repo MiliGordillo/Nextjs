@@ -2,7 +2,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getCurrentUser } from '@/lib/auth';
+import Image from 'next/image';
+import ProductCard from '@/components/ProductCard';
 
 interface Product {
   id: string;
@@ -31,6 +32,7 @@ export default function ProductsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [filterStock, setFilterStock] = useState<'all' | 'available'>('all');
 
   useEffect(() => {
     loadProducts();
@@ -116,6 +118,7 @@ export default function ProductsPage() {
       imageUrl: product.imageUrl || '',
     });
     setEditingId(product.id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = async (id: string) => {
@@ -137,14 +140,14 @@ export default function ProductsPage() {
     }
   };
 
-  const handleAddToCart = async (productId: string) => {
+  const handleAddToCart = async (productId: string, quantity: number) => {
     try {
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           productId,
-          quantity: 1,
+          quantity,
         }),
       });
 
@@ -154,11 +157,17 @@ export default function ProductsPage() {
         return;
       }
 
-      setSuccessMessage('Producto agregado al carrito');
+      setSuccessMessage('✅ Producto agregado al carrito');
+      setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
       setError('Error de conexión');
     }
   };
+
+  const filteredProducts = products.filter(p => {
+    if (filterStock === 'available') return p.stock > 0;
+    return true;
+  });
 
   if (loading) {
     return (
@@ -170,16 +179,18 @@ export default function ProductsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Productos</h1>
-          <p className="text-slate-500">{isAdmin ? 'Gestiona el inventario' : 'Explora nuestros productos'}</p>
+          <h1 className="text-3xl font-bold text-slate-900">Productos</h1>
+          <p className="text-slate-500 mt-1">
+            {isAdmin ? 'Gestiona el inventario' : `${filteredProducts.length} producto${filteredProducts.length !== 1 ? 's' : ''} disponible${filteredProducts.length !== 1 ? 's' : ''}`}
+          </p>
         </div>
       </div>
 
       {error && (
         <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-700">{error}</p>
+          <p className="text-sm text-red-700">❌ {error}</p>
         </div>
       )}
 
@@ -189,7 +200,7 @@ export default function ProductsPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {isAdmin && (
           <div className="lg:col-span-1">
             <div className="card sticky top-8">
@@ -275,38 +286,71 @@ export default function ProductsPage() {
           </div>
         )}
 
-        <div className={isAdmin ? 'lg:col-span-2' : 'lg:col-span-3'}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {products.length === 0 ? (
+        <div className={isAdmin ? 'lg:col-span-3' : 'lg:col-span-4'}>
+          {/* Filtros */}
+          {!isAdmin && (
+            <div className="mb-6 flex gap-2">
+              <button
+                onClick={() => setFilterStock('all')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  filterStock === 'all'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Todos ({products.length})
+              </button>
+              <button
+                onClick={() => setFilterStock('available')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  filterStock === 'available'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Disponibles ({products.filter(p => p.stock > 0).length})
+              </button>
+            </div>
+          )}
+
+          {/* Grid de productos */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProducts.length === 0 ? (
               <div className="col-span-full py-12 text-center bg-white rounded-xl border border-dashed border-slate-300">
-                <p className="text-slate-400">No hay productos</p>
+                <p className="text-slate-400 text-lg">
+                  {products.length === 0
+                    ? 'No hay productos disponibles'
+                    : 'No hay productos en stock'}
+                </p>
               </div>
             ) : (
-              products.map((product) => (
-                <div key={product.id} className="card flex flex-col">
-                  {product.imageUrl && (
-                    <img
-                      src={product.imageUrl}
-                      alt={product.name}
-                      className="w-full h-40 object-cover rounded-lg mb-4"
-                      onError={(e) => (e.currentTarget.style.display = 'none')}
-                    />
-                  )}
-                  <div className="flex-1">
-                    <h3 className="font-bold text-slate-900">{product.name}</h3>
-                    <p className="text-sm text-slate-500 line-clamp-2 mt-1 mb-4">{product.description}</p>
-                  </div>
-                  <div className="flex justify-between items-center pt-4 border-t border-slate-100 mb-4">
-                    <span className="font-bold text-blue-600">${product.price}</span>
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                      product.stock > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                    }`}>
-                      {product.stock > 0 ? `${product.stock} en stock` : 'Sin stock'}
-                    </span>
-                  </div>
-                  <div className={`flex gap-2 ${isAdmin ? 'flex-col' : ''}`}>
-                    {isAdmin ? (
-                      <>
+              filteredProducts.map((product) => (
+                <div key={product.id}>
+                  {isAdmin ? (
+                    <div className="card flex flex-col h-full">
+                      {product.imageUrl && (
+                        <Image
+                          src={product.imageUrl}
+                          alt={product.name}
+                          width={300}
+                          height={160}
+                          className="w-full h-40 object-cover rounded-lg mb-4"
+                          onError={(e) => (e.currentTarget.style.display = 'none')}
+                        />
+                      )}
+                      <div className="flex-1">
+                        <h3 className="font-bold text-slate-900">{product.name}</h3>
+                        <p className="text-sm text-slate-500 line-clamp-2 mt-1 mb-4">{product.description}</p>
+                      </div>
+                      <div className="flex justify-between items-center pt-4 border-t border-slate-100 mb-4">
+                        <span className="font-bold text-blue-600">${product.price}</span>
+                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                          product.stock > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                        }`}>
+                          {product.stock > 0 ? `${product.stock} en stock` : 'Sin stock'}
+                        </span>
+                      </div>
+                      <div className="flex gap-2 flex-col">
                         <button
                           onClick={() => handleEdit(product)}
                           className="flex-1 px-3 py-2 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors font-medium"
@@ -319,17 +363,19 @@ export default function ProductsPage() {
                         >
                           🗑️ Eliminar
                         </button>
-                      </>
-                    ) : (
-                      <button
-                        onClick={() => handleAddToCart(product.id)}
-                        disabled={product.stock === 0}
-                        className="flex-1 px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50"
-                      >
-                        🛒 Agregar al carrito
-                      </button>
-                    )}
-                  </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <ProductCard
+                      id={product.id}
+                      name={product.name}
+                      description={product.description}
+                      price={product.price}
+                      stock={product.stock}
+                      imageUrl={product.imageUrl}
+                      onAddToCart={handleAddToCart}
+                    />
+                  )}
                 </div>
               ))
             )}

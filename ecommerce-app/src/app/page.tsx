@@ -1,4 +1,3 @@
-// src/app/page.tsx
 import { getCurrentUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
