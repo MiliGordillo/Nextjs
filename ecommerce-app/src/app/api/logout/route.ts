@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 
 export async function POST() {
-  const response = NextResponse.json(
-    { message: "Sesión cerrada correctamente" },
-    { status: 200 }
-  );
+  const response = NextResponse.redirect(new URL("/", "http://localhost:3000"), {
+    status: 302,
+  });
 
   response.cookies.set("authToken", "", {
     httpOnly: true,
@@ -17,11 +16,11 @@ export async function POST() {
   return response;
 }
 
+
 export async function GET() {
-  const response = NextResponse.json(
-    { message: "Use POST para cerrar sesión" },
-    { status: 200 }
-  );
+  const response = NextResponse.redirect(new URL("/", "http://localhost:3000"), {
+    status: 302,
+  });
 
   response.cookies.set("authToken", "", {
     httpOnly: true,

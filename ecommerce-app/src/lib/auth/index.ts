@@ -11,6 +11,7 @@ export interface UserSession {
   email: string;
   name: string;
   role: string;
+  [key: string]: string;
 }
 
 export async function createJWT(user: UserSession): Promise<string> {
