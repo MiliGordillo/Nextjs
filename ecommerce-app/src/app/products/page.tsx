@@ -203,85 +203,206 @@ export default function ProductsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {isAdmin && (
           <div className="lg:col-span-1">
-            <div className="card sticky top-8">
-              <h2 className="font-bold text-lg mb-4">{editingId ? 'Editar' : 'Nuevo'} Producto</h2>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Nombre</label>
-                  <input
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    placeholder="Nombre del producto"
-                    className="input"
-                    required
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium mb-1 block">Precio</label>
-                    <input
-                      name="price"
-                      type="number"
-                      step="0.01"
-                      value={formData.price}
-                      onChange={handleInputChange}
-                      placeholder="0.00"
-                      className="input"
-                      required
-                    />
+            <div className="sticky top-8 space-y-4">
+              <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-6 text-white shadow-lg">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                    {editingId ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                    )}
                   </div>
                   <div>
-                    <label className="text-sm font-medium mb-1 block">Stock</label>
-                    <input
-                      name="stock"
-                      type="number"
-                      value={formData.stock}
-                      onChange={handleInputChange}
-                      placeholder="0"
-                      className="input"
-                      required
-                    />
+                    <h2 className="font-bold text-lg">{editingId ? 'Editar' : 'Nuevo'} Producto</h2>
+                    <p className="text-blue-100 text-sm">{editingId ? 'Modifica los detalles' : 'Agrega al inventario'}</p>
                   </div>
                 </div>
-                <div>
-                  <label className="text-sm font-medium mb-1 block">URL Imagen</label>
-                  <input
-                    name="imageUrl"
-                    value={formData.imageUrl}
-                    onChange={handleInputChange}
-                    placeholder="https://..."
-                    className="input"
-                  />
+              </div>
+
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <form onSubmit={handleSubmit} className="divide-y divide-slate-100">
+                  <div className="p-5 space-y-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-3">
+                      <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Información Básica
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5 block">Nombre del producto</label>
+                      <input
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        placeholder="Ej: Camiseta Premium"
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all text-slate-900 placeholder:text-slate-400"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5 block">Descripción</label>
+                      <textarea
+                        name="description"
+                        value={formData.description}
+                        onChange={handleInputChange}
+                        placeholder="Describe el producto..."
+                        rows={3}
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all text-slate-900 placeholder:text-slate-400 resize-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="p-5 space-y-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-3">
+                      <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Precio y Stock
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5 block">Precio ($)</label>
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">$</span>
+                          <input
+                            name="price"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={formData.price}
+                            onChange={handleInputChange}
+                            placeholder="0.00"
+                            className="w-full pl-8 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all text-slate-900 placeholder:text-slate-400"
+                            required
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5 block">Cantidad</label>
+                        <div className="relative">
+                          <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                          </svg>
+                          <input
+                            name="stock"
+                            type="number"
+                            min="0"
+                            value={formData.stock}
+                            onChange={handleInputChange}
+                            placeholder="0"
+                            className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all text-slate-900 placeholder:text-slate-400"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-5 space-y-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-3">
+                      <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      Imagen del Producto
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5 block">URL de la imagen</label>
+                      <input
+                        name="imageUrl"
+                        value={formData.imageUrl}
+                        onChange={handleInputChange}
+                        placeholder="https://ejemplo.com/imagen.jpg"
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all text-slate-900 placeholder:text-slate-400"
+                      />
+                    </div>
+                    {formData.imageUrl && (
+                      <div className="relative rounded-xl overflow-hidden bg-slate-100 aspect-video">
+                        <img
+                          src={formData.imageUrl}
+                          alt="Vista previa"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                          }}
+                        />
+                        <div className="hidden absolute inset-0 flex items-center justify-center text-slate-400 text-sm">
+                          <div className="text-center">
+                            <svg className="w-8 h-8 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            URL no válida
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {!formData.imageUrl && (
+                      <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center">
+                        <svg className="w-10 h-10 mx-auto text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <p className="text-sm text-slate-400">Agrega una URL para ver la vista previa</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-5 bg-slate-50">
+                    <div className="flex gap-3">
+                      <button 
+                        type="submit" 
+                        className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg active:scale-[0.98] flex items-center justify-center gap-2"
+                      >
+                        {editingId ? (
+                          <>
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            Guardar Cambios
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            Crear Producto
+                          </>
+                        )}
+                      </button>
+                      {editingId && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingId(null);
+                            setFormData({ name: '', description: '', price: '', stock: '', imageUrl: '' });
+                          }}
+                          className="px-5 py-3 border border-slate-300 text-slate-600 rounded-xl hover:bg-white hover:border-slate-400 transition-all font-medium"
+                        >
+                          Cancelar
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-blue-900">Consejo</p>
+                    <p className="text-xs text-blue-700 mt-0.5">Usa imágenes de alta calidad para mejores resultados. El tamaño recomendado es 800x600px.</p>
+                  </div>
                 </div>
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Descripción</label>
-                  <textarea
-                    name="description"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    placeholder="Descripción..."
-                    className="input h-24 resize-none"
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <button type="submit" className="btn-primary flex-1">
-                    {editingId ? 'Actualizar' : 'Crear'}
-                  </button>
-                  {editingId && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingId(null);
-                        setFormData({ name: '', description: '', price: '', stock: '', imageUrl: '' });
-                      }}
-                      className="px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
-                    >
-                      Cancelar
-                    </button>
-                  )}
-                </div>
-              </form>
+              </div>
             </div>
           </div>
         )}
